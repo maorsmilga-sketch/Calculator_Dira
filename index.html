@@ -5950,6 +5950,14 @@ body,
 <body>
 <div id="root"></div>
 <script>
+window.__moverReset = function () {
+  if (!window.confirm("\u05dc\u05d0\u05e4\u05e1 \u05d0\u05ea \u05db\u05dc \u05d4\u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05e9\u05e0\u05e9\u05de\u05e8\u05d5 \u05d1\u05de\u05db\u05e9\u05d9\u05e8 \u05d6\u05d4?")) return;
+  try { Object.keys(window.localStorage).filter(function (k) { return k.indexOf("mover-calc.") === 0; }).forEach(function (k) { window.localStorage.removeItem(k); }); } catch (e) {}
+  window.location.reload();
+};
+</script>
+<style>.reset-link{background:none;border:0;padding:4px 2px;margin:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer;opacity:.8}</style>
+<script>
 window.instinctFile = Object.freeze({
   initialRoute: decodeURIComponent(location.hash.slice(1) || '/'),
   route: function(path) {},
@@ -13664,51 +13672,17 @@ window.instinctFile = Object.freeze({
       };
     }, []), e2;
   }
-  function iu(e2, a) {
-    let [t, o] = (0, import_react3.useState)({ scope: { key: e2, initialValue: a }, value: a, status: "loading", ready: false });
-    t.scope.key !== e2 && o({ scope: { key: e2, initialValue: a }, value: a, status: "loading", ready: false });
-    let { scope: r, value: l2, status: u, ready: s } = t, d = (0, import_react3.useRef)(null), f2 = (0, import_react3.useCallback)((n) => {
-      o((p) => p.scope === r ? { ...p, ...n } : p);
-    }, [r]);
-    (0, import_react3.useEffect)(() => {
-      let n = { scope: r, value: r.initialValue, hydrated: false, sequence: 0 };
-      d.current = n;
-      let p = Ba(), x = (m) => {
-        if (d.current !== n) return;
-        let C = r.initialValue;
-        try {
-          typeof m.value == "string" && (C = JSON.parse(m.value));
-        } catch {
-          m = { status: "invalid" };
-        }
-        n.value = C, n.hydrated = m.status === "saved" || m.status === "memory", f2({ value: C, status: m.status ?? "memory", ready: true });
-      };
-      return p?.request ? p.request("local.read", { key: r.key }).then(x) : x({ status: "memory" }), () => {
-        d.current === n && (d.current = null);
-      };
-    }, [r, f2]);
-    let i = (0, import_react3.useCallback)((n) => {
-      let p = d.current;
-      if (!s || p?.scope !== r) return;
-      let x = typeof n == "function" ? n(p.value) : n;
-      p.value = x;
-      let m = ++p.sequence, C;
-      try {
-        if (C = JSON.stringify(x), C === void 0) throw new Error("Invalid local state");
-      } catch {
-        f2({ value: x, status: "invalid" });
-        return;
-      }
-      let y2 = Ba();
-      if (!y2?.request || !p.hydrated) {
-        f2({ value: x, status: "memory" });
-        return;
-      }
-      f2({ value: x, status: "saving" }), y2.request("local.write", { key: r.key, value: C }).then((P) => {
-        d.current === p && p.sequence === m && f2({ status: P.status ?? "unknown" });
+  function iu(key, initial) {
+    const rd = () => { try { const s = window.localStorage.getItem(key); return s == null ? initial : JSON.parse(s); } catch (e) { return initial; } };
+    let [val, setVal] = (0, import_react3.useState)(rd);
+    const set = (0, import_react3.useCallback)((n) => {
+      setVal((p) => {
+        const x = typeof n == "function" ? n(p) : n;
+        try { if (x === void 0 || x === null) window.localStorage.removeItem(key); else window.localStorage.setItem(key, JSON.stringify(x)); } catch (e) {}
+        return x;
       });
-    }, [r, s, f2]);
-    return [l2, i, { ready: s, status: u, message: u === "loading" ? "Loading saved state\u2026" : u === "saving" ? "Saving\u2026" : u === "saved" ? "Saved on this device" : "Not saved. Changes last only while this File is open." }];
+    }, [key]);
+    return [val, set, { ready: true, status: "saved", message: "Saved on this device" }];
   }
   function bt() {
     let [e2, a] = (0, import_react3.useState)("idle"), [t, o] = (0, import_react3.useState)(0), r = (0, import_react3.useRef)(null), l2 = (0, import_react3.useRef)(null), u = (0, import_react3.useRef)(0), s = (0, import_react3.useRef)(true);
@@ -17968,9 +17942,12 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
       return { ready, price, sale, need, available, down20, atHandover, payRegular, S: S3, bank, paySub, khAmount, khOpenM, khAtEnd, gap, newMortPay, pay61, khLate, loansStay, loansEstimated, loansAdd, paySubShown, pay61Shown, khLateAfterShown, ltvReg: ltvOf(need), ltvBank: ltvOf(bank) };
     };
     const offerCalc = (0, import_react23.useMemo)(() => computeOffer(calc.salePrice), [offer, calc, newN, NEW_MIX, consoCalc, subAmt, subM]);
-    const [stressSale, setStressSale] = (0, import_react23.useState)(null);
+    const [stressSale, setStressSaleRaw] = (0, import_react23.useState)(null);
+    const setStressSale = (v) => { setStressSaleRaw(v); try { if (v == null) window.localStorage.removeItem("mover-calc.stress.v1"); else window.localStorage.setItem("mover-calc.stress.v1", JSON.stringify({ sale: calc.salePrice, v })); } catch (e) {} };
     (0, import_react23.useEffect)(() => {
-      setStressSale(null);
+      let r = null;
+      try { const s = JSON.parse(window.localStorage.getItem("mover-calc.stress.v1") || "null"); if (s && s.sale === calc.salePrice && typeof s.v === "number") r = s.v; } catch (e) {}
+      setStressSaleRaw(r);
     }, [calc.salePrice]);
     const stressMin = Math.max(0, calc.salePrice - 5e5);
     const stressMax = calc.salePrice + 5e5;
@@ -18569,7 +18546,7 @@ ${xref}
             ] }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E9\u05E0\u05D5\u05EA \u05DE\u05E9\u05DB\u05E0\u05EA\u05D0", value: form.years, onChange: (v2) => update({ years: v2 }), placeholder: "25" }),
             /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05EA\u05D5\u05E1\u05E4\u05D5\u05EA (\u05DE\u05D8\u05D1\u05D7, \u05D2\u05D9\u05E0\u05D4, \u05E9\u05D9\u05E4\u05D5\u05E5)", value: form.additions, onChange: (v2) => update({ additions: v2 }) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "estimate-note", children: "\u05D0\u05D5\u05DE\u05D3\u05DF \u05D1\u05DC\u05D1\u05D3, \u05DC\u05D0 \u05D9\u05D9\u05E2\u05D5\u05E5 \u05E4\u05D9\u05E0\u05E0\u05E1\u05D9" }),
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "estimate-note", children: ["\u05D0\u05D5\u05DE\u05D3\u05DF \u05D1\u05DC\u05D1\u05D3, \u05DC\u05D0 \u05D9\u05D9\u05E2\u05D5\u05E5 \u05E4\u05D9\u05E0\u05E0\u05E1\u05D9", " \u00B7 ", (0, import_jsx_runtime21.jsx)("button", { type: "button", className: "reset-link", onClick: () => window.__moverReset(), children: "\u05D0\u05D9\u05E4\u05D5\u05E1" })] }),
           /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("details", { className: "adv", children: [
             /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("summary", { children: "\u05E4\u05E8\u05D8\u05D9\u05DD \u05E7\u05D1\u05D5\u05E2\u05D9\u05DD: \u05D4\u05D5\u05DF \u05E2\u05E6\u05DE\u05D9, \u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05E0\u05D5\u05DB\u05D7\u05D9\u05EA, \u05E2\u05DC\u05D5\u05D9\u05D5\u05EA" }),
             /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "adv-body", children: [
