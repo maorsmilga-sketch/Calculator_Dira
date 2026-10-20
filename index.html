@@ -17466,7 +17466,7 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
     { id: 3, balance: "11213", rate: "5.25", monthly: "605", months: "19", payDay: "10" },
     { id: 4, balance: "41557", rate: "6.55", monthly: "514", months: "107", payDay: "10" }
   ];
-  var OFFER_DEF = { khAmount: "500000", khYears: "10", loansClosed: "on", subAmount: "1000000", subYears: "5" };
+  var OFFER_DEF = { enabled: false, khAmount: "500000", khYears: "10", loansClosed: "on", subAmount: "1000000", subYears: "5" };
   var T_KINDS = [
     { value: "prime", label: "\u05E4\u05E8\u05D9\u05D9\u05DD", short: "\u05E4\u05E8\u05D9\u05D9\u05DD", def: () => String(BASE_RATES.prime) },
     { value: "fixed", label: "\u05E7\u05D1\u05D5\u05E2\u05D4 \u05DC\u05D0 \u05E6\u05DE\u05D5\u05D3\u05D4 (\u05E7\u05DC\u05F4\u05E6)", short: '\u05E7\u05DC"\u05E6', def: () => String(BASE_RATES.fixedUnindexed) },
@@ -17631,6 +17631,8 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
     const updateLoan = (id, patch) => updateLoans(loans.map((l2) => l2.id === id ? { ...l2, ...patch } : l2));
     const [offerSaved, setOfferSaved, offerMeta] = iu("mover-calc.offer.v2", null);
     const offer = { ...OFFER_DEF, ...offerSaved ?? {} };
+    const hasKh = offer.enabled === true;
+    const [offerModal, setOfferModal] = (0, import_react23.useState)(false);
     const updateOffer = (patch) => {
       if (offerMeta.ready) setOfferSaved({ ...offer, ...patch });
     };
@@ -18213,9 +18215,9 @@ Please change the parent <Route path="${parentPath}"> to <Route path="${parentPa
         model: { ...c, P, ...withLtv(P), monthly: during, schedule: [{ label: `\u05D1-${subYrsTxt} \u05E9\u05E0\u05D5\u05EA \u05D4\u05E1\u05D1\u05E1\u05D5\u05D3`, v: during }, { label: `\u05DE\u05D7\u05D5\u05D3\u05E9 ${subNextM}`, v: after }], rows: mkRows(rows, P), notes: notesC }
       };
     };
-    const scnA = buildScn("a"), scnB = buildScn("b"), scnC = buildScn("c");
+    const scnA = buildScn("a"), scnB = hasKh ? buildScn("b") : null, scnC = hasKh ? buildScn("c") : null;
     const scnById = { a: scnA, b: scnB, c: scnC };
-    const sm = scnById[scnSel ?? "a"] && scnById[scnSel ?? "a"].model || baseModel;
+    const sm = scnById[hasKh ? scnSel ?? "a" : "a"] && scnById[hasKh ? scnSel ?? "a" : "a"].model || baseModel;
     const textOf = (m) => {
       const L = [`*${summaryTitle}*`];
       if (m.scenName) L.push(`\u05EA\u05E8\u05D7\u05D9\u05E9: ${m.scenName}${m.optsTxt ? " (" + m.optsTxt + ")" : ""}`);
@@ -18433,7 +18435,7 @@ ${xref}
         setPdfBusy(false);
       }
     };
-    const renderNav = () => [["main", "\u05D7\u05D9\u05E9\u05D5\u05D1", "\u05D7\u05D9\u05E9\u05D5\u05D1", "\u25C9"], ["offer", "\u05D4\u05DC\u05D5\u05D5\u05D0\u05EA \u05E7\u05D1\u05DC\u05DF", "\u05D4\u05DC\u05D5\u05D5\u05D0\u05EA \u05E7\u05D1\u05DC\u05DF", "\u2726"], ["port", "\u05D2\u05E8\u05D9\u05E8\u05D4", "\u05D2\u05E8\u05D9\u05E8\u05D4", "\u21E2"], ["consol", "\u05D0\u05D9\u05D7\u05D5\u05D3 \u05D4\u05DC\u05D5\u05D5\u05D0\u05D5\u05EA", "\u05D0\u05D9\u05D7\u05D5\u05D3", "\u21C4"], ["scen", "\u05EA\u05E8\u05D7\u05D9\u05E9\u05D9\u05DD", "\u05EA\u05E8\u05D7\u05D9\u05E9\u05D9\u05DD", "\u25CE"], ["sum", "\u05E1\u05D9\u05DB\u05D5\u05DD", "\u05E1\u05D9\u05DB\u05D5\u05DD", "\u2605"]].map(([k2, l2, short, ic]) => /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("button", { type: "button", role: "tab", "aria-label": l2, "aria-selected": tab === k2, className: (tab === k2 ? "tab on" : "tab") + (k2 === "sum" ? " tab-sum" : ""), onClick: () => {
+    const renderNav = () => [["main", "\u05D7\u05D9\u05E9\u05D5\u05D1", "\u05D7\u05D9\u05E9\u05D5\u05D1", "\u25C9"], ...hasKh ? [["offer", "\u05D4\u05DC\u05D5\u05D5\u05D0\u05EA \u05E7\u05D1\u05DC\u05DF", "\u05D4\u05DC\u05D5\u05D5\u05D0\u05EA \u05E7\u05D1\u05DC\u05DF", "\u2726"]] : [], ["port", "\u05D2\u05E8\u05D9\u05E8\u05D4", "\u05D2\u05E8\u05D9\u05E8\u05D4", "\u21E2"], ["consol", "\u05D0\u05D9\u05D7\u05D5\u05D3 \u05D4\u05DC\u05D5\u05D5\u05D0\u05D5\u05EA", "\u05D0\u05D9\u05D7\u05D5\u05D3", "\u21C4"], ["scen", "\u05EA\u05E8\u05D7\u05D9\u05E9\u05D9\u05DD", "\u05EA\u05E8\u05D7\u05D9\u05E9\u05D9\u05DD", "\u25CE"], ["sum", "\u05E1\u05D9\u05DB\u05D5\u05DD", "\u05E1\u05D9\u05DB\u05D5\u05DD", "\u2605"]].map(([k2, l2, short, ic]) => /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("button", { type: "button", role: "tab", "aria-label": l2, "aria-selected": tab === k2, className: (tab === k2 ? "tab on" : "tab") + (k2 === "sum" ? " tab-sum" : ""), onClick: () => {
       setTab(k2);
       setNavOpen(false);
       setScnInfo(null);
@@ -18442,207 +18444,7 @@ ${xref}
       /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "tab-ic", "aria-hidden": "true", children: ic }),
       /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "tab-tx", children: short })
     ] }, k2));
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Nu, { children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { dir: "rtl", lang: "he", className: "app-shell", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "app-scroll", ref: appScrollRef, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "app-heading", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "app-eyebrow", children: "\u05DE\u05EA\u05DB\u05E0\u05E0\u05D9\u05DD \u05D0\u05EA \u05D4\u05E6\u05E2\u05D3 \u05D4\u05D1\u05D0" }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("h1", { children: "\u05DE\u05D7\u05E9\u05D1\u05D5\u05DF \u05DE\u05E2\u05D1\u05E8 \u05D3\u05D9\u05E8\u05D4" })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("button", { type: "button", className: "rates-pill", onClick: openRates, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA" }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: rates.on && ratesValid(rates) ? "\u05E9\u05DC\u05D9" : "\u05E9\u05D5\u05E7" })
-          ] })
-        ] }),
-        showRates && (0, import_react_dom.createPortal)(
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "rates-overlay", onClick: () => setShowRates(false), children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "rates-modal", role: "dialog", "aria-modal": "true", "aria-label": "\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA", onClick: (e2) => e2.stopPropagation(), children: [
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "rates-grab", "aria-hidden": "true" }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sum-title", children: "\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA \u05DC\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05D4\u05D7\u05D3\u05E9\u05D4" }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(ku, { label: "\u05DE\u05E7\u05D5\u05E8 \u05D4\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA", value: draft.on ? "own" : "market", onChange: (v2) => setDraft({ ...draft, on: v2 === "own" }), options: [{ value: "market", label: "\u05DE\u05DE\u05D5\u05E6\u05E2 \u05E9\u05D5\u05E7" }, { value: "own", label: "\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA \u05E9\u05DC\u05D9" }] }),
-            !draft.on ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "grid3", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E7\u05D1\u05D5\u05E2\u05D4 \u05DC\u05D0 \u05E6\u05DE\u05D5\u05D3\u05D4 (\u05E7\u05DC\u05F4\u05E6)", value: draft.kalatz, onChange: (v2) => setDraft({ ...draft, kalatz: v2 }), placeholder: String(BASE_RATES.fixedUnindexed) }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E4\u05E8\u05D9\u05D9\u05DD", value: draft.prime, onChange: (v2) => setDraft({ ...draft, prime: v2 }), placeholder: String(BASE_RATES.prime) }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E7\u05D1\u05D5\u05E2\u05D4 \u05E6\u05DE\u05D5\u05D3\u05EA \u05DE\u05D3\u05D3", value: draft.indexed, onChange: (v2) => setDraft({ ...draft, indexed: v2 }), placeholder: String(BASE_RATES.fixedIndexed) })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "sr-sub", children: [
-                "\u05DE\u05DE\u05D5\u05E6\u05E2\u05D9 \u05D1\u05E0\u05E7 \u05D9\u05E9\u05E8\u05D0\u05DC, \u05E2\u05D5\u05D3\u05DB\u05DF \u05DC\u05D0\u05D7\u05E8\u05D5\u05E0\u05D4 \u05D1\u05E7\u05D5\u05D1\u05E5: ",
-                BASE_RATES.asOf,
-                " - \u05D0\u05E4\u05E9\u05E8 \u05DC\u05E2\u05E8\u05D5\u05DA \u05D9\u05D3\u05E0\u05D9\u05EA."
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(_u, { children: "\u05D4\u05D3\u05E3 \u05DC\u05D0 \u05DE\u05EA\u05D7\u05D1\u05E8 \u05DC\u05E8\u05E9\u05EA, \u05DC\u05DB\u05DF \u05D0\u05D9\u05DF \u05E2\u05D3\u05DB\u05D5\u05DF \u05D0\u05D5\u05D8\u05D5\u05DE\u05D8\u05D9 \u05E9\u05DC \u05D4\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA. \u05DC\u05E2\u05D3\u05DB\u05D5\u05DF \u05DE\u05D5\u05DC \u05D4\u05E0\u05EA\u05D5\u05DF \u05D4\u05E2\u05D3\u05DB\u05E0\u05D9 \u05D0\u05E4\u05E9\u05E8 \u05DC\u05E4\u05EA\u05D5\u05D7 \u05D0\u05EA \u05D4\u05DE\u05E7\u05D5\u05E8 \u05D5\u05DC\u05E2\u05E8\u05D5\u05DA \u05DB\u05D0\u05DF \u05D9\u05D3\u05E0\u05D9\u05EA." })
-            ] }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(_u, { children: "\u05D1\u05E0\u05D5 \u05D0\u05EA \u05D4\u05EA\u05DE\u05D4\u05D9\u05DC \u05E9\u05DC\u05DB\u05DD: \u05DC\u05DB\u05DC \u05DE\u05E1\u05DC\u05D5\u05DC \u05D1\u05D7\u05E8\u05D5 \u05E1\u05D5\u05D2, \u05E8\u05D9\u05D1\u05D9\u05EA \u05E9\u05E0\u05EA\u05D9\u05EA, \u05D7\u05DC\u05E7 \u05DE\u05D4\u05D4\u05DC\u05D5\u05D5\u05D0\u05D4 \u05D5\u05EA\u05E7\u05D5\u05E4\u05D4. \u05DB\u05DC \u05D4\u05DC\u05E9\u05D5\u05E0\u05D9\u05D5\u05EA \u05D9\u05D7\u05D5\u05E9\u05D1\u05D5 \u05DC\u05E4\u05D9 \u05D4\u05DE\u05E1\u05DC\u05D5\u05DC\u05D9\u05DD \u05D4\u05D0\u05DC\u05D4." }),
-              dTracks.map((t, idx) => {
-                const k2 = kindOf(t.kind);
-                return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "rates-row trk", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "trk-top", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "trk-num", children: idx + 1 }),
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("select", { "aria-label": "\u05E1\u05D5\u05D2 \u05DE\u05E1\u05DC\u05D5\u05DC", value: t.kind, onChange: (e2) => {
-                      const nk = kindOf(e2.target.value);
-                      const prevDef = k2.def ? k2.def() : "";
-                      patchDTrack(t.id, { kind: nk.value, rate: t.rate === "" || t.rate === prevDef ? nk.def ? nk.def() : "" : t.rate, reset: nk.variable ? t.reset || "5" : "" });
-                    }, children: T_KINDS.map((o) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("option", { value: o.value, children: o.label }, o.value)) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { type: "button", className: "trk-del", "aria-label": "\u05D4\u05E1\u05E8\u05EA \u05DE\u05E1\u05DC\u05D5\u05DC", disabled: dTracks.length <= 1, onClick: () => setDTracks(dTracks.filter((x) => x.id !== t.id)), children: "\u05D4\u05E1\u05E8\u05D4" })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "grid2", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E8\u05D9\u05D1\u05D9\u05EA (%)", value: t.rate, onChange: (v2) => patchDTrack(t.id, { rate: v2 }), placeholder: "4.5" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05D7\u05DC\u05E7 \u05DE\u05D4\u05D4\u05DC\u05D5\u05D5\u05D0\u05D4 (%)", value: t.share, onChange: (v2) => patchDTrack(t.id, { share: v2 }), placeholder: "33" })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "trk-term", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05EA\u05E7\u05D5\u05E4\u05D4", value: t.term, onChange: (v2) => patchDTrack(t.id, { term: v2 }), placeholder: t.unit === "y" ? "25" : "300" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "unit-toggle", role: "group", "aria-label": "\u05D9\u05D7\u05D9\u05D3\u05EA \u05EA\u05E7\u05D5\u05E4\u05D4", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { type: "button", className: t.unit === "y" ? "on" : "", "aria-pressed": t.unit === "y", onClick: () => t.unit !== "y" && patchDTrack(t.id, { unit: "y", term: t.term === "" ? "" : String(Math.round(num(t.term) / 12 * 10) / 10) }), children: "\u05E9\u05E0\u05D9\u05DD" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { type: "button", className: t.unit === "m" ? "on" : "", "aria-pressed": t.unit === "m", onClick: () => t.unit !== "m" && patchDTrack(t.id, { unit: "m", term: t.term === "" ? "" : String(Math.round(num(t.term) * 12)) }), children: "\u05D7\u05D5\u05D3\u05E9\u05D9\u05DD" })
-                    ] })
-                  ] }),
-                  k2.variable && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("label", { className: "field", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "field-label", children: "\u05D4\u05E8\u05D9\u05D1\u05D9\u05EA \u05DE\u05EA\u05E2\u05D3\u05DB\u05E0\u05EA \u05DB\u05DC" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("select", { className: "trk-sel", value: t.reset || "5", onChange: (e2) => patchDTrack(t.id, { reset: e2.target.value }), children: RESET_OPTIONS.map((r) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("option", { value: r, children: r === "1" ? "\u05E9\u05E0\u05D4" : `${r} \u05E9\u05E0\u05D9\u05DD` }, r)) })
-                  ] }),
-                  k2.variable && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sr-sub", children: "\u05D4\u05D7\u05D9\u05E9\u05D5\u05D1 \u05DE\u05E0\u05D9\u05D7 \u05E9\u05D4\u05E8\u05D9\u05D1\u05D9\u05EA \u05E0\u05E9\u05D0\u05E8\u05EA \u05DB\u05E4\u05D9 \u05E9\u05D4\u05D5\u05D6\u05E0\u05D4 \u05D2\u05DD \u05D0\u05D7\u05E8\u05D9 \u05D4\u05E2\u05D3\u05DB\u05D5\u05DF." }),
-                  t.kind.endsWith("I") || t.kind === "indexed" ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sr-sub", children: "\u05E6\u05DE\u05D5\u05D3\u05D4 \u05DC\u05DE\u05D3\u05D3: \u05D4\u05D4\u05D7\u05D6\u05E8 \u05D1\u05E4\u05D5\u05E2\u05DC \u05D9\u05E2\u05DC\u05D4 \u05E2\u05DD \u05D4\u05DE\u05D3\u05D3, \u05D5\u05D4\u05D7\u05D9\u05E9\u05D5\u05D1 \u05DB\u05D0\u05DF \u05DC\u05DC\u05D0 \u05D4\u05E6\u05DE\u05D3\u05D4." }) : null
-                ] }, t.id);
-              }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: `trk-sum ${dSum === 100 ? "ok" : "bad"}`, children: [
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05E1\u05D4\u05F4\u05DB \u05D7\u05DC\u05E7\u05D9\u05DD" }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("b", { children: [
-                  dSum,
-                  "%"
-                ] })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(W, { variant: "secondary", compact: true, disabled: dTracks.length >= MAX_NEW_TRACKS, onClick: () => {
-                const fy = dTracks.find((x) => x.term !== "");
-                setDTracks([...dTracks, newNewTrack("fixed", String(Math.max(0, 100 - dSum)), fy ? fy.term : "25", fy ? fy.unit : "y")]);
-              }, children: "+ \u05D4\u05D5\u05E1\u05E4\u05EA \u05DE\u05E1\u05DC\u05D5\u05DC" }),
-              dIssues.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(ju, { title: "\u05D1\u05D3\u05E7\u05D5 \u05D0\u05EA \u05D4\u05E0\u05EA\u05D5\u05E0\u05D9\u05DD", tone: "warning", children: dIssues.join(" ") })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "sum-actions", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(W, { disabled: draft.on && dIssues.length > 0, onClick: () => {
-                onApplyRates(draft);
-                setShowRates(false);
-              }, children: "\u05D4\u05D7\u05DC\u05D4" }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(W, { variant: "secondary", onClick: () => setShowRates(false), children: "\u05E1\u05D2\u05D9\u05E8\u05D4" })
-            ] }),
-            !draft.on && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("a", { className: "rates-src", href: "https://mortgageadvisory.co.il/market-data/", target: "_blank", rel: "noopener noreferrer", children: "\u05E4\u05EA\u05D9\u05D7\u05EA \u05D4\u05DE\u05E7\u05D5\u05E8 \u05DC\u05D1\u05D3\u05D9\u05E7\u05D4" })
-          ] }) }),
-          document.body
-        ),
-        tab === "main" && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "main-intro", children: "\u05DE\u05D6\u05D9\u05E0\u05D9\u05DD \u05D0\u05EA \u05E4\u05E8\u05D8\u05D9 \u05D4\u05D3\u05D9\u05E8\u05D4, \u05D5\u05D4\u05D4\u05D7\u05D6\u05E8 \u05DE\u05EA\u05E2\u05D3\u05DB\u05DF \u05DE\u05D9\u05D3." }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("label", { className: "field address-field", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "field-label", children: "\u05DB\u05EA\u05D5\u05D1\u05EA/\u05E9\u05DD \u05D4\u05D3\u05D9\u05E8\u05D4" }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("input", { value: form.address ?? "", maxLength: 120, placeholder: "\u05DC\u05DE\u05E9\u05DC \u05E0\u05E2\u05DE\u05D9 \u05E9\u05DE\u05E8 12", autoComplete: "off", onChange: (e2) => update({ address: e2.target.value }) })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "grid4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05DE\u05D7\u05D9\u05E8 \u05DE\u05DB\u05D9\u05E8\u05D4 - \u05D3\u05D9\u05E8\u05D4 \u05E0\u05D5\u05DB\u05D7\u05D9\u05EA", value: form.salePrice, onChange: (v2) => update({ salePrice: v2 }), placeholder: "1,800,000" }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05DE\u05D7\u05D9\u05E8 \u05D4\u05D3\u05D9\u05E8\u05D4 \u05D4\u05D7\u05D3\u05E9\u05D4", value: form.purchasePrice, onChange: (v2) => update({ purchasePrice: v2 }), placeholder: "3,500,000" }),
-            ownMode && calc.termFromTracks ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "field", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "field-label", children: "\u05E9\u05E0\u05D5\u05EA \u05DE\u05E9\u05DB\u05E0\u05EA\u05D0" }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("button", { type: "button", className: "term-btn", onClick: openRates, children: [
-                "\u05DC\u05E4\u05D9 \u05D4\u05DE\u05E1\u05DC\u05D5\u05DC\u05D9\u05DD \xB7 ",
-                yrsTxt
-              ] })
-            ] }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E9\u05E0\u05D5\u05EA \u05DE\u05E9\u05DB\u05E0\u05EA\u05D0", value: form.years, onChange: (v2) => update({ years: v2 }), placeholder: "25" }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05EA\u05D5\u05E1\u05E4\u05D5\u05EA (\u05DE\u05D8\u05D1\u05D7, \u05D2\u05D9\u05E0\u05D4, \u05E9\u05D9\u05E4\u05D5\u05E5)", value: form.additions, onChange: (v2) => update({ additions: v2 }) })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "estimate-note", children: ["\u05D0\u05D5\u05DE\u05D3\u05DF \u05D1\u05DC\u05D1\u05D3, \u05DC\u05D0 \u05D9\u05D9\u05E2\u05D5\u05E5 \u05E4\u05D9\u05E0\u05E0\u05E1\u05D9", " \u00B7 ", (0, import_jsx_runtime21.jsx)("button", { type: "button", className: "reset-link", onClick: () => window.__moverReset(), children: "\u05D0\u05D9\u05E4\u05D5\u05E1" })] }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("details", { className: "adv", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("summary", { children: "\u05E4\u05E8\u05D8\u05D9\u05DD \u05E7\u05D1\u05D5\u05E2\u05D9\u05DD: \u05D4\u05D5\u05DF \u05E2\u05E6\u05DE\u05D9, \u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05E0\u05D5\u05DB\u05D7\u05D9\u05EA, \u05E2\u05DC\u05D5\u05D9\u05D5\u05EA" }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "adv-body", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05D4\u05D5\u05DF \u05E2\u05E6\u05DE\u05D9 \u05D5\u05D7\u05E1\u05DB\u05D5\u05E0\u05D5\u05EA \u05E0\u05D5\u05E1\u05E4\u05D9\u05DD", value: form.savings, onChange: (v2) => update({ savings: v2 }) }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sub-title", children: "\u05D4\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05D4\u05E0\u05D5\u05DB\u05D7\u05D9\u05EA (\u05DE\u05D6\u05D9\u05E0\u05D9\u05DD \u05E4\u05E2\u05DD \u05D0\u05D7\u05EA)" }),
-              form.tracks.map((t) => /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "track-card", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "track-top", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("select", { value: t.kind, onChange: (e2) => updateTrack(t.id, { kind: e2.target.value }), "aria-label": "\u05E1\u05D5\u05D2 \u05DE\u05E1\u05DC\u05D5\u05DC", children: KINDS.map((k2) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("option", { value: k2.value, children: k2.label }, k2.value)) }),
-                  form.tracks.length > 1 && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { className: "x", "aria-label": "\u05D4\u05E1\u05E8 \u05DE\u05E1\u05DC\u05D5\u05DC", onClick: () => update({ tracks: form.tracks.filter((x) => x.id !== t.id) }), children: "\u05D4\u05E1\u05E8" })
-                ] }),
-                PROVISIONAL_TRACK_IDS.has(t.id) && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sr-sub", role: "note", children: "\u05DE\u05E1\u05DC\u05D5\u05DC \u05D6\u05DE\u05E0\u05D9 - \u05D4\u05E1\u05D5\u05D2 \u05D5\u05D4\u05D9\u05EA\u05E8\u05D4 \u05E2\u05D5\u05D3 \u05DC\u05D0 \u05D0\u05D5\u05E9\u05E8\u05D5 (\u05D4\u05E2\u05E8\u05DB\u05D4 \u05D1\u05DC\u05D1\u05D3, \u05DC\u05E2\u05D3\u05DB\u05D5\u05DF)." }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05D9\u05EA\u05E8\u05D4 \u05DC\u05E1\u05D9\u05DC\u05D5\u05E7", value: t.balance, onChange: (v2) => updateTrack(t.id, { balance: v2 }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "grid2", children: [
-                  t.kind === "prime" ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05DE\u05E8\u05D5\u05D5\u05D7 \u05DE\u05E4\u05E8\u05D9\u05D9\u05DD (%)", value: t.margin ?? "", onChange: (v2) => updateTrack(t.id, { margin: v2 }), placeholder: "-0.1" }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E8\u05D9\u05D1\u05D9\u05EA (%)", value: t.rate, onChange: (v2) => updateTrack(t.id, { rate: v2 }), placeholder: "4.5" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E9\u05E0\u05D9\u05DD \u05E9\u05E0\u05D5\u05EA\u05E8\u05D5", value: t.years, onChange: (v2) => updateTrack(t.id, { years: v2 }), placeholder: "15" })
-                ] }),
-                t.kind === "prime" && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "sr-sub", children: [
-                  "\u05E8\u05D9\u05D1\u05D9\u05EA \u05D4\u05DE\u05E1\u05DC\u05D5\u05DC: ",
-                  String(Math.round(trackRate(t) * 100) / 100),
-                  "% = \u05E4\u05E8\u05D9\u05D9\u05DD (",
-                  rates.prime,
-                  "%) ",
-                  (num(t.margin ?? "0") >= 0 ? "+" : "") + (t.margin ?? "0"),
-                  "%."
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05D9\u05D5\u05DD \u05D7\u05D9\u05D5\u05D1 \u05D1\u05D7\u05D5\u05D3\u05E9", value: t.payDay, onChange: (v2) => updateTrack(t.id, { payDay: v2 }), placeholder: "10" })
-              ] }, t.id)),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(W, { variant: "secondary", compact: true, onClick: () => update({ tracks: [...form.tracks, newRow()] }), children: "\u05D4\u05D5\u05E1\u05E3 \u05DE\u05E1\u05DC\u05D5\u05DC" }),
-              calc.complete && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(_u, { children: [
-                "\u05D9\u05EA\u05E8\u05D4 \u05E0\u05D5\u05DB\u05D7\u05D9\u05EA \u05DE\u05E9\u05D5\u05E2\u05E8\u05EA (\u05D9\u05D5\u05E8\u05D3\u05EA \u05D0\u05D5\u05D8\u05D5\u05DE\u05D8\u05D9\u05EA \u05DB\u05DC \u05D7\u05D5\u05D3\u05E9): ",
-                fmt(calc.balance),
-                " \xB7 \u05D4\u05D7\u05D6\u05E8 \u05D7\u05D5\u05D3\u05E9\u05D9 \u05E0\u05D5\u05DB\u05D7\u05D9: ",
-                fmt(calc.currentPayment)
-              ] }),
-              !calc.complete && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(_u, { children: "\u05D4\u05E9\u05DC\u05D9\u05DE\u05D5 \u05D9\u05EA\u05E8\u05D4, \u05E8\u05D9\u05D1\u05D9\u05EA \u05D5\u05E9\u05E0\u05D9\u05DD \u05D1\u05DB\u05DC \u05DE\u05E1\u05DC\u05D5\u05DC \u05DB\u05D3\u05D9 \u05DC\u05E8\u05D0\u05D5\u05EA \u05D0\u05EA \u05D4\u05D4\u05D7\u05D6\u05E8 \u05D4\u05E0\u05D5\u05DB\u05D7\u05D9. \u05D4\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05DE\u05E9\u05DE\u05E9\u05EA \u05E8\u05E7 \u05DC\u05D4\u05E9\u05D5\u05D5\u05D0\u05D4 \u05DE\u05D5\u05DC \u05D4\u05D4\u05D7\u05D6\u05E8 \u05D4\u05D7\u05D3\u05E9." }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-                ku,
-                {
-                  label: "\u05E1\u05D5\u05D2 \u05E8\u05DB\u05D9\u05E9\u05D4 (\u05DE\u05E1 \u05E8\u05DB\u05D9\u05E9\u05D4, \u05DE\u05D3\u05E8\u05D2\u05D5\u05EA 2026)",
-                  value: form.taxMode,
-                  onChange: (v2) => update({ taxMode: v2 }),
-                  options: [
-                    { value: "upgrader", label: "\u05DE\u05E9\u05E4\u05E8 \u05D3\u05D9\u05D5\u05E8" },
-                    { value: "single", label: "\u05D3\u05D9\u05E8\u05D4 \u05D9\u05D7\u05D9\u05D3\u05D4" },
-                    { value: "additional", label: "\u05D3\u05D9\u05E8\u05D4 \u05E0\u05D5\u05E1\u05E4\u05EA" }
-                  ]
-                }
-              ),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "grid2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E2\u05D5\u05E8\u05DA \u05D3\u05D9\u05DF \u05D1\u05E7\u05E0\u05D9\u05D9\u05D4 (% + \u05DE\u05E2\u05F4\u05DE)", value: form.lawyerPct, onChange: (v2) => update({ lawyerPct: v2 }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05EA\u05D9\u05D5\u05D5\u05DA \u05E7\u05E0\u05D9\u05D9\u05D4 (% + \u05DE\u05E2\u05F4\u05DE)", value: form.brokerPct, onChange: (v2) => update({ brokerPct: v2 }) })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "grid2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05E9\u05DE\u05D0\u05D9 (\u20AA \u05E7\u05D1\u05D5\u05E2)", value: form.appraiserCost, onChange: (v2) => update({ appraiserCost: v2 }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05D4\u05D5\u05D1\u05DC\u05D4 (\u20AA \u05E7\u05D1\u05D5\u05E2)", value: form.movingCost, onChange: (v2) => update({ movingCost: v2 }) })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05EA\u05D9\u05D5\u05D5\u05DA \u05DE\u05DB\u05D9\u05E8\u05D4 (% \u05DE\u05DE\u05D7\u05D9\u05E8 \u05D4\u05DE\u05DB\u05D9\u05E8\u05D4 + \u05DE\u05E2\u05F4\u05DE)", value: form.sellCostPct, onChange: (v2) => update({ sellCostPct: v2 }) }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "exp-box", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sub-title", children: "\u05E2\u05DC\u05D5\u05D9\u05D5\u05EA \u05E0\u05DC\u05D5\u05D5\u05EA - \u05DC\u05D0 \u05E0\u05DB\u05E0\u05E1\u05D5\u05EA \u05DC\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0" }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "exp-lines", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05DE\u05E1 \u05E8\u05DB\u05D9\u05E9\u05D4" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.tax) })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05E2\u05D5\u05E8\u05DA \u05D3\u05D9\u05DF" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.lawyer) })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05EA\u05D9\u05D5\u05D5\u05DA \u05E7\u05E0\u05D9\u05D9\u05D4" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.broker) })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05EA\u05D9\u05D5\u05D5\u05DA \u05DE\u05DB\u05D9\u05E8\u05D4" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.sellCost) })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05E9\u05DE\u05D0\u05D9" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.appraiser) })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05D4\u05D5\u05D1\u05DC\u05D4" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.moving) })
-                  ] })
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "exp-total", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05E1\u05D4\u05F4\u05DB \u05E2\u05DC\u05D5\u05D9\u05D5\u05EA \u05E0\u05DC\u05D5\u05D5\u05EA" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.expenses) })
-                ] })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(_u, { children: ownMode ? `\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA \u05DC\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05D4\u05D7\u05D3\u05E9\u05D4 - \u05DC\u05E4\u05D9 \u05D4\u05DE\u05E1\u05DC\u05D5\u05DC\u05D9\u05DD \u05E9\u05D4\u05D6\u05E0\u05EA\u05DD: ${NEW_MIX.map((t) => `${t.short} ${t.rate}% (${Math.round(t.share)}%)`).join(", ")}.` : `\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA \u05DC\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05D4\u05D7\u05D3\u05E9\u05D4 - \u05DE\u05DE\u05D5\u05E6\u05E2 \u05E9\u05D5\u05E7 \u05DC\u05E4\u05D9 \u05D1\u05E0\u05E7 \u05D9\u05E9\u05E8\u05D0\u05DC (${MARKET_RATES.asOf}): \u05E7\u05DC\u05F4\u05E6 ${MARKET_RATES.fixedUnindexed}%, \u05E4\u05E8\u05D9\u05D9\u05DD ${MARKET_RATES.prime}%, \u05E7\u05D1\u05D5\u05E2\u05D4 \u05E6\u05DE\u05D5\u05D3\u05D4 ${MARKET_RATES.fixedIndexed}%.` })
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(ju, { title: "\u05D7\u05E9\u05D5\u05D1 \u05DC\u05D3\u05E2\u05EA", tone: "warning", children: "\u05D4\u05D4\u05D7\u05D6\u05E8 \u05DE\u05D7\u05D5\u05E9\u05D1 \u05D1\u05E9\u05E4\u05D9\u05E6\u05E8; \u05D1\u05DE\u05E1\u05DC\u05D5\u05DC\u05D9\u05DD \u05E6\u05DE\u05D5\u05D3\u05D9 \u05DE\u05D3\u05D3 \u05D5\u05DE\u05E9\u05EA\u05E0\u05D9\u05DD \u05D4\u05D4\u05D7\u05D6\u05E8 \u05D1\u05E4\u05D5\u05E2\u05DC \u05D9\u05E9\u05EA\u05E0\u05D4. \u05DC\u05D0 \u05E0\u05DB\u05DC\u05DC\u05D9\u05DD \u05DE\u05E1 \u05E9\u05D1\u05D7 \u05D5\u05E2\u05DC\u05D5\u05D9\u05D5\u05EA \u05E4\u05D9\u05E0\u05D5\u05D9. \u05DC\u05E4\u05E0\u05D9 \u05D4\u05D7\u05EA\u05D9\u05DE\u05D4 \u05DB\u05D3\u05D0\u05D9 \u05DC\u05D1\u05D3\u05D5\u05E7 \u05DE\u05D5\u05DC \u05D9\u05D5\u05E2\u05E5 \u05DE\u05E9\u05DB\u05E0\u05EA\u05D0\u05D5\u05EA \u05D5\u05E2\u05D5\u05E8\u05DA \u05D3\u05D9\u05DF." })
-        ] }),
-        tab === "offer" && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "tab-body", style: { position: "relative" }, children: [
+    const offerInner = () => /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sum-title", children: "\u05D4\u05E6\u05E2\u05EA \u05E7\u05D1\u05DC\u05DF" }),
           /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(TabIntro, { children: '\u05DE\u05D9\u05DE\u05D5\u05DF \u05E7\u05D1\u05DC\u05DF: \u05D4\u05D6\u05D9\u05E0\u05D5 \u05D0\u05EA \u05D4\u05E1\u05DB\u05D5\u05DD \u05D5\u05D0\u05EA \u05EA\u05E7\u05D5\u05E4\u05EA \u05D4\u05E1\u05D1\u05E1\u05D5\u05D3 (\u05D1\u05E8\u05D9\u05E8\u05EA \u05D4\u05DE\u05D7\u05D3\u05DC: \u05DE\u05D9\u05DC\u05D9\u05D5\u05DF \u20AA \u05DC-5 \u05E9\u05E0\u05D9\u05DD, \u05DB\u05DE\u05D5 \u05D1\u05D4\u05E6\u05E2\u05D4 \u05E9\u05E7\u05D9\u05D1\u05DC\u05EA). \u05D4\u05EA\u05E9\u05DC\u05D5\u05DD: 20% \u05D1\u05D7\u05EA\u05D9\u05DE\u05EA \u05D7\u05D5\u05D6\u05D4 \u05D5-80% \u05D1\u05DE\u05E1\u05D9\u05E8\u05D4, \u05D5\u05D4\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05E0\u05DC\u05E7\u05D7\u05EA \u05D1\u05DE\u05E1\u05D9\u05E8\u05D4. \u05D1\u05E1\u05D5\u05E3 \u05D4\u05EA\u05E7\u05D5\u05E4\u05D4 \u05E1\u05D5\u05DC\u05E7\u05D9\u05DD \u05D0\u05EA \u05DE\u05D9\u05DE\u05D5\u05DF \u05D4\u05E7\u05D1\u05DC\u05DF \u05DE\u05D4\u05DB\u05E1\u05E3 \u05D4\u05E2\u05EA\u05D9\u05D3\u05D9, \u05D5\u05D4\u05E4\u05E2\u05E8 \u05D4\u05D5\u05E4\u05DA \u05DC\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05E0\u05D5\u05E1\u05E4\u05EA \u05DC\u05D0\u05D5\u05EA\u05D4 \u05EA\u05E7\u05D5\u05E4\u05D4. \u05D4\u05DE\u05D7\u05D9\u05E8\u05D9\u05DD \u05DE\u05E1\u05D5\u05E0\u05DB\u05E8\u05E0\u05D9\u05DD \u05E2\u05DD \u05DE\u05E1\u05DA "\u05D7\u05D9\u05E9\u05D5\u05D1".' }),
           /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "grid2", children: [
@@ -18838,6 +18640,221 @@ ${xref}
             MARKET_RATES.asOf,
             "). \u05EA\u05E0\u05D0\u05D9 \u05D4\u05E7\u05D1\u05DC\u05DF \u05D1\u05E4\u05D5\u05E2\u05DC \u05E2\u05E9\u05D5\u05D9\u05D9\u05DD \u05DC\u05D4\u05D9\u05D5\u05EA \u05E9\u05D5\u05E0\u05D9\u05DD - \u05DB\u05D3\u05D0\u05D9 \u05DC\u05D1\u05D3\u05D5\u05E7 \u05DE\u05D5\u05DC \u05D4\u05E7\u05D1\u05DC\u05DF \u05DC\u05E4\u05E0\u05D9 \u05D7\u05EA\u05D9\u05DE\u05D4. \u05DC\u05D0 \u05D9\u05D9\u05E2\u05D5\u05E5 \u05E4\u05D9\u05E0\u05E0\u05E1\u05D9."
           ] })
+    ] });
+    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Nu, { children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { dir: "rtl", lang: "he", className: "app-shell", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "app-scroll", ref: appScrollRef, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "app-heading", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "app-eyebrow", children: "\u05DE\u05EA\u05DB\u05E0\u05E0\u05D9\u05DD \u05D0\u05EA \u05D4\u05E6\u05E2\u05D3 \u05D4\u05D1\u05D0" }),
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("h1", { children: "\u05DE\u05D7\u05E9\u05D1\u05D5\u05DF \u05DE\u05E2\u05D1\u05E8 \u05D3\u05D9\u05E8\u05D4" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("button", { type: "button", className: "rates-pill", onClick: openRates, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA" }),
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: rates.on && ratesValid(rates) ? "\u05E9\u05DC\u05D9" : "\u05E9\u05D5\u05E7" })
+          ] })
+        ] }),
+        offerModal && hasKh && (0, import_react_dom.createPortal)(
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "rates-overlay", onClick: () => setOfferModal(false), children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "rates-modal", role: "dialog", "aria-modal": "true", "aria-label": "\u05D4\u05DC\u05D5\u05D5\u05D0\u05EA \u05E7\u05D1\u05DC\u05DF", dir: "rtl", lang: "he", style: { fontFamily: "var(--ds-font-text, inherit), Arial, sans-serif" }, onClick: (e) => e.stopPropagation(), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "rates-grab", "aria-hidden": "true" }),
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { style: { position: "relative", display: "flex", flexDirection: "column", gap: 10 }, children: offerInner() }),
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sum-actions", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(W, { onClick: () => setOfferModal(false), children: "\u05E1\u05D2\u05D9\u05E8\u05D4" }) })
+          ] }) }),
+          document.body
+        ),
+        showRates && (0, import_react_dom.createPortal)(
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "rates-overlay", onClick: () => setShowRates(false), children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "rates-modal", role: "dialog", "aria-modal": "true", "aria-label": "\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA", onClick: (e2) => e2.stopPropagation(), children: [
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "rates-grab", "aria-hidden": "true" }),
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sum-title", children: "\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA \u05DC\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05D4\u05D7\u05D3\u05E9\u05D4" }),
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(ku, { label: "\u05DE\u05E7\u05D5\u05E8 \u05D4\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA", value: draft.on ? "own" : "market", onChange: (v2) => setDraft({ ...draft, on: v2 === "own" }), options: [{ value: "market", label: "\u05DE\u05DE\u05D5\u05E6\u05E2 \u05E9\u05D5\u05E7" }, { value: "own", label: "\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA \u05E9\u05DC\u05D9" }] }),
+            !draft.on ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "grid3", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E7\u05D1\u05D5\u05E2\u05D4 \u05DC\u05D0 \u05E6\u05DE\u05D5\u05D3\u05D4 (\u05E7\u05DC\u05F4\u05E6)", value: draft.kalatz, onChange: (v2) => setDraft({ ...draft, kalatz: v2 }), placeholder: String(BASE_RATES.fixedUnindexed) }),
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E4\u05E8\u05D9\u05D9\u05DD", value: draft.prime, onChange: (v2) => setDraft({ ...draft, prime: v2 }), placeholder: String(BASE_RATES.prime) }),
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E7\u05D1\u05D5\u05E2\u05D4 \u05E6\u05DE\u05D5\u05D3\u05EA \u05DE\u05D3\u05D3", value: draft.indexed, onChange: (v2) => setDraft({ ...draft, indexed: v2 }), placeholder: String(BASE_RATES.fixedIndexed) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "sr-sub", children: [
+                "\u05DE\u05DE\u05D5\u05E6\u05E2\u05D9 \u05D1\u05E0\u05E7 \u05D9\u05E9\u05E8\u05D0\u05DC, \u05E2\u05D5\u05D3\u05DB\u05DF \u05DC\u05D0\u05D7\u05E8\u05D5\u05E0\u05D4 \u05D1\u05E7\u05D5\u05D1\u05E5: ",
+                BASE_RATES.asOf,
+                " - \u05D0\u05E4\u05E9\u05E8 \u05DC\u05E2\u05E8\u05D5\u05DA \u05D9\u05D3\u05E0\u05D9\u05EA."
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(_u, { children: "\u05D4\u05D3\u05E3 \u05DC\u05D0 \u05DE\u05EA\u05D7\u05D1\u05E8 \u05DC\u05E8\u05E9\u05EA, \u05DC\u05DB\u05DF \u05D0\u05D9\u05DF \u05E2\u05D3\u05DB\u05D5\u05DF \u05D0\u05D5\u05D8\u05D5\u05DE\u05D8\u05D9 \u05E9\u05DC \u05D4\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA. \u05DC\u05E2\u05D3\u05DB\u05D5\u05DF \u05DE\u05D5\u05DC \u05D4\u05E0\u05EA\u05D5\u05DF \u05D4\u05E2\u05D3\u05DB\u05E0\u05D9 \u05D0\u05E4\u05E9\u05E8 \u05DC\u05E4\u05EA\u05D5\u05D7 \u05D0\u05EA \u05D4\u05DE\u05E7\u05D5\u05E8 \u05D5\u05DC\u05E2\u05E8\u05D5\u05DA \u05DB\u05D0\u05DF \u05D9\u05D3\u05E0\u05D9\u05EA." })
+            ] }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(_u, { children: "\u05D1\u05E0\u05D5 \u05D0\u05EA \u05D4\u05EA\u05DE\u05D4\u05D9\u05DC \u05E9\u05DC\u05DB\u05DD: \u05DC\u05DB\u05DC \u05DE\u05E1\u05DC\u05D5\u05DC \u05D1\u05D7\u05E8\u05D5 \u05E1\u05D5\u05D2, \u05E8\u05D9\u05D1\u05D9\u05EA \u05E9\u05E0\u05EA\u05D9\u05EA, \u05D7\u05DC\u05E7 \u05DE\u05D4\u05D4\u05DC\u05D5\u05D5\u05D0\u05D4 \u05D5\u05EA\u05E7\u05D5\u05E4\u05D4. \u05DB\u05DC \u05D4\u05DC\u05E9\u05D5\u05E0\u05D9\u05D5\u05EA \u05D9\u05D7\u05D5\u05E9\u05D1\u05D5 \u05DC\u05E4\u05D9 \u05D4\u05DE\u05E1\u05DC\u05D5\u05DC\u05D9\u05DD \u05D4\u05D0\u05DC\u05D4." }),
+              dTracks.map((t, idx) => {
+                const k2 = kindOf(t.kind);
+                return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "rates-row trk", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "trk-top", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "trk-num", children: idx + 1 }),
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("select", { "aria-label": "\u05E1\u05D5\u05D2 \u05DE\u05E1\u05DC\u05D5\u05DC", value: t.kind, onChange: (e2) => {
+                      const nk = kindOf(e2.target.value);
+                      const prevDef = k2.def ? k2.def() : "";
+                      patchDTrack(t.id, { kind: nk.value, rate: t.rate === "" || t.rate === prevDef ? nk.def ? nk.def() : "" : t.rate, reset: nk.variable ? t.reset || "5" : "" });
+                    }, children: T_KINDS.map((o) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("option", { value: o.value, children: o.label }, o.value)) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { type: "button", className: "trk-del", "aria-label": "\u05D4\u05E1\u05E8\u05EA \u05DE\u05E1\u05DC\u05D5\u05DC", disabled: dTracks.length <= 1, onClick: () => setDTracks(dTracks.filter((x) => x.id !== t.id)), children: "\u05D4\u05E1\u05E8\u05D4" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "grid2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E8\u05D9\u05D1\u05D9\u05EA (%)", value: t.rate, onChange: (v2) => patchDTrack(t.id, { rate: v2 }), placeholder: "4.5" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05D7\u05DC\u05E7 \u05DE\u05D4\u05D4\u05DC\u05D5\u05D5\u05D0\u05D4 (%)", value: t.share, onChange: (v2) => patchDTrack(t.id, { share: v2 }), placeholder: "33" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "trk-term", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05EA\u05E7\u05D5\u05E4\u05D4", value: t.term, onChange: (v2) => patchDTrack(t.id, { term: v2 }), placeholder: t.unit === "y" ? "25" : "300" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "unit-toggle", role: "group", "aria-label": "\u05D9\u05D7\u05D9\u05D3\u05EA \u05EA\u05E7\u05D5\u05E4\u05D4", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { type: "button", className: t.unit === "y" ? "on" : "", "aria-pressed": t.unit === "y", onClick: () => t.unit !== "y" && patchDTrack(t.id, { unit: "y", term: t.term === "" ? "" : String(Math.round(num(t.term) / 12 * 10) / 10) }), children: "\u05E9\u05E0\u05D9\u05DD" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { type: "button", className: t.unit === "m" ? "on" : "", "aria-pressed": t.unit === "m", onClick: () => t.unit !== "m" && patchDTrack(t.id, { unit: "m", term: t.term === "" ? "" : String(Math.round(num(t.term) * 12)) }), children: "\u05D7\u05D5\u05D3\u05E9\u05D9\u05DD" })
+                    ] })
+                  ] }),
+                  k2.variable && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("label", { className: "field", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "field-label", children: "\u05D4\u05E8\u05D9\u05D1\u05D9\u05EA \u05DE\u05EA\u05E2\u05D3\u05DB\u05E0\u05EA \u05DB\u05DC" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("select", { className: "trk-sel", value: t.reset || "5", onChange: (e2) => patchDTrack(t.id, { reset: e2.target.value }), children: RESET_OPTIONS.map((r) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("option", { value: r, children: r === "1" ? "\u05E9\u05E0\u05D4" : `${r} \u05E9\u05E0\u05D9\u05DD` }, r)) })
+                  ] }),
+                  k2.variable && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sr-sub", children: "\u05D4\u05D7\u05D9\u05E9\u05D5\u05D1 \u05DE\u05E0\u05D9\u05D7 \u05E9\u05D4\u05E8\u05D9\u05D1\u05D9\u05EA \u05E0\u05E9\u05D0\u05E8\u05EA \u05DB\u05E4\u05D9 \u05E9\u05D4\u05D5\u05D6\u05E0\u05D4 \u05D2\u05DD \u05D0\u05D7\u05E8\u05D9 \u05D4\u05E2\u05D3\u05DB\u05D5\u05DF." }),
+                  t.kind.endsWith("I") || t.kind === "indexed" ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sr-sub", children: "\u05E6\u05DE\u05D5\u05D3\u05D4 \u05DC\u05DE\u05D3\u05D3: \u05D4\u05D4\u05D7\u05D6\u05E8 \u05D1\u05E4\u05D5\u05E2\u05DC \u05D9\u05E2\u05DC\u05D4 \u05E2\u05DD \u05D4\u05DE\u05D3\u05D3, \u05D5\u05D4\u05D7\u05D9\u05E9\u05D5\u05D1 \u05DB\u05D0\u05DF \u05DC\u05DC\u05D0 \u05D4\u05E6\u05DE\u05D3\u05D4." }) : null
+                ] }, t.id);
+              }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: `trk-sum ${dSum === 100 ? "ok" : "bad"}`, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05E1\u05D4\u05F4\u05DB \u05D7\u05DC\u05E7\u05D9\u05DD" }),
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("b", { children: [
+                  dSum,
+                  "%"
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(W, { variant: "secondary", compact: true, disabled: dTracks.length >= MAX_NEW_TRACKS, onClick: () => {
+                const fy = dTracks.find((x) => x.term !== "");
+                setDTracks([...dTracks, newNewTrack("fixed", String(Math.max(0, 100 - dSum)), fy ? fy.term : "25", fy ? fy.unit : "y")]);
+              }, children: "+ \u05D4\u05D5\u05E1\u05E4\u05EA \u05DE\u05E1\u05DC\u05D5\u05DC" }),
+              dIssues.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(ju, { title: "\u05D1\u05D3\u05E7\u05D5 \u05D0\u05EA \u05D4\u05E0\u05EA\u05D5\u05E0\u05D9\u05DD", tone: "warning", children: dIssues.join(" ") })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "sum-actions", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(W, { disabled: draft.on && dIssues.length > 0, onClick: () => {
+                onApplyRates(draft);
+                setShowRates(false);
+              }, children: "\u05D4\u05D7\u05DC\u05D4" }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(W, { variant: "secondary", onClick: () => setShowRates(false), children: "\u05E1\u05D2\u05D9\u05E8\u05D4" })
+            ] }),
+            !draft.on && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("a", { className: "rates-src", href: "https://mortgageadvisory.co.il/market-data/", target: "_blank", rel: "noopener noreferrer", children: "\u05E4\u05EA\u05D9\u05D7\u05EA \u05D4\u05DE\u05E7\u05D5\u05E8 \u05DC\u05D1\u05D3\u05D9\u05E7\u05D4" })
+          ] }) }),
+          document.body
+        ),
+        tab === "main" && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "main-intro", children: "\u05DE\u05D6\u05D9\u05E0\u05D9\u05DD \u05D0\u05EA \u05E4\u05E8\u05D8\u05D9 \u05D4\u05D3\u05D9\u05E8\u05D4, \u05D5\u05D4\u05D4\u05D7\u05D6\u05E8 \u05DE\u05EA\u05E2\u05D3\u05DB\u05DF \u05DE\u05D9\u05D3." }),
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("label", { className: "field address-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "field-label", children: "\u05DB\u05EA\u05D5\u05D1\u05EA/\u05E9\u05DD \u05D4\u05D3\u05D9\u05E8\u05D4" }),
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("input", { value: form.address ?? "", maxLength: 120, placeholder: "\u05DC\u05DE\u05E9\u05DC \u05E0\u05E2\u05DE\u05D9 \u05E9\u05DE\u05E8 12", autoComplete: "off", onChange: (e2) => update({ address: e2.target.value }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "grid4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05DE\u05D7\u05D9\u05E8 \u05DE\u05DB\u05D9\u05E8\u05D4 - \u05D3\u05D9\u05E8\u05D4 \u05E0\u05D5\u05DB\u05D7\u05D9\u05EA", value: form.salePrice, onChange: (v2) => update({ salePrice: v2 }), placeholder: "1,800,000" }),
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05DE\u05D7\u05D9\u05E8 \u05D4\u05D3\u05D9\u05E8\u05D4 \u05D4\u05D7\u05D3\u05E9\u05D4", value: form.purchasePrice, onChange: (v2) => update({ purchasePrice: v2 }), placeholder: "3,500,000" }),
+            ownMode && calc.termFromTracks ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "field", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "field-label", children: "\u05E9\u05E0\u05D5\u05EA \u05DE\u05E9\u05DB\u05E0\u05EA\u05D0" }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("button", { type: "button", className: "term-btn", onClick: openRates, children: [
+                "\u05DC\u05E4\u05D9 \u05D4\u05DE\u05E1\u05DC\u05D5\u05DC\u05D9\u05DD \xB7 ",
+                yrsTxt
+              ] })
+            ] }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E9\u05E0\u05D5\u05EA \u05DE\u05E9\u05DB\u05E0\u05EA\u05D0", value: form.years, onChange: (v2) => update({ years: v2 }), placeholder: "25" }),
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05EA\u05D5\u05E1\u05E4\u05D5\u05EA (\u05DE\u05D8\u05D1\u05D7, \u05D2\u05D9\u05E0\u05D4, \u05E9\u05D9\u05E4\u05D5\u05E5)", value: form.additions, onChange: (v2) => update({ additions: v2 }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(ku, { label: "\u05D9\u05E9 \u05D4\u05DC\u05D5\u05D5\u05D0\u05EA \u05E7\u05D1\u05DC\u05DF?", value: hasKh ? "on" : "off", onChange: (v2) => { if (v2 === "on") { updateOffer({ enabled: true }); setOfferModal(true); } else { updateOffer({ enabled: false }); setOfferModal(false); if (tab === "offer") setTab("main"); } }, options: [{ value: "off", label: "\u05DC\u05D0" }, { value: "on", label: "\u05DB\u05DF" }] }),
+          hasKh && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sum-actions", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(W, { onClick: () => setOfferModal(true), children: "\u05E2\u05E8\u05D9\u05DB\u05EA \u05E7\u05D1\u05DC\u05DF" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "estimate-note", children: ["\u05D0\u05D5\u05DE\u05D3\u05DF \u05D1\u05DC\u05D1\u05D3, \u05DC\u05D0 \u05D9\u05D9\u05E2\u05D5\u05E5 \u05E4\u05D9\u05E0\u05E0\u05E1\u05D9", " \u00B7 ", (0, import_jsx_runtime21.jsx)("button", { type: "button", className: "reset-link", onClick: () => window.__moverReset(), children: "\u05D0\u05D9\u05E4\u05D5\u05E1" })] }),
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("details", { className: "adv", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("summary", { children: "\u05E4\u05E8\u05D8\u05D9\u05DD \u05E7\u05D1\u05D5\u05E2\u05D9\u05DD: \u05D4\u05D5\u05DF \u05E2\u05E6\u05DE\u05D9, \u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05E0\u05D5\u05DB\u05D7\u05D9\u05EA, \u05E2\u05DC\u05D5\u05D9\u05D5\u05EA" }),
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "adv-body", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05D4\u05D5\u05DF \u05E2\u05E6\u05DE\u05D9 \u05D5\u05D7\u05E1\u05DB\u05D5\u05E0\u05D5\u05EA \u05E0\u05D5\u05E1\u05E4\u05D9\u05DD", value: form.savings, onChange: (v2) => update({ savings: v2 }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sub-title", children: "\u05D4\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05D4\u05E0\u05D5\u05DB\u05D7\u05D9\u05EA (\u05DE\u05D6\u05D9\u05E0\u05D9\u05DD \u05E4\u05E2\u05DD \u05D0\u05D7\u05EA)" }),
+              form.tracks.map((t) => /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "track-card", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "track-top", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("select", { value: t.kind, onChange: (e2) => updateTrack(t.id, { kind: e2.target.value }), "aria-label": "\u05E1\u05D5\u05D2 \u05DE\u05E1\u05DC\u05D5\u05DC", children: KINDS.map((k2) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("option", { value: k2.value, children: k2.label }, k2.value)) }),
+                  form.tracks.length > 1 && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { className: "x", "aria-label": "\u05D4\u05E1\u05E8 \u05DE\u05E1\u05DC\u05D5\u05DC", onClick: () => update({ tracks: form.tracks.filter((x) => x.id !== t.id) }), children: "\u05D4\u05E1\u05E8" })
+                ] }),
+                PROVISIONAL_TRACK_IDS.has(t.id) && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sr-sub", role: "note", children: "\u05DE\u05E1\u05DC\u05D5\u05DC \u05D6\u05DE\u05E0\u05D9 - \u05D4\u05E1\u05D5\u05D2 \u05D5\u05D4\u05D9\u05EA\u05E8\u05D4 \u05E2\u05D5\u05D3 \u05DC\u05D0 \u05D0\u05D5\u05E9\u05E8\u05D5 (\u05D4\u05E2\u05E8\u05DB\u05D4 \u05D1\u05DC\u05D1\u05D3, \u05DC\u05E2\u05D3\u05DB\u05D5\u05DF)." }),
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05D9\u05EA\u05E8\u05D4 \u05DC\u05E1\u05D9\u05DC\u05D5\u05E7", value: t.balance, onChange: (v2) => updateTrack(t.id, { balance: v2 }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "grid2", children: [
+                  t.kind === "prime" ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05DE\u05E8\u05D5\u05D5\u05D7 \u05DE\u05E4\u05E8\u05D9\u05D9\u05DD (%)", value: t.margin ?? "", onChange: (v2) => updateTrack(t.id, { margin: v2 }), placeholder: "-0.1" }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E8\u05D9\u05D1\u05D9\u05EA (%)", value: t.rate, onChange: (v2) => updateTrack(t.id, { rate: v2 }), placeholder: "4.5" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E9\u05E0\u05D9\u05DD \u05E9\u05E0\u05D5\u05EA\u05E8\u05D5", value: t.years, onChange: (v2) => updateTrack(t.id, { years: v2 }), placeholder: "15" })
+                ] }),
+                t.kind === "prime" && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "sr-sub", children: [
+                  "\u05E8\u05D9\u05D1\u05D9\u05EA \u05D4\u05DE\u05E1\u05DC\u05D5\u05DC: ",
+                  String(Math.round(trackRate(t) * 100) / 100),
+                  "% = \u05E4\u05E8\u05D9\u05D9\u05DD (",
+                  rates.prime,
+                  "%) ",
+                  (num(t.margin ?? "0") >= 0 ? "+" : "") + (t.margin ?? "0"),
+                  "%."
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05D9\u05D5\u05DD \u05D7\u05D9\u05D5\u05D1 \u05D1\u05D7\u05D5\u05D3\u05E9", value: t.payDay, onChange: (v2) => updateTrack(t.id, { payDay: v2 }), placeholder: "10" })
+              ] }, t.id)),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(W, { variant: "secondary", compact: true, onClick: () => update({ tracks: [...form.tracks, newRow()] }), children: "\u05D4\u05D5\u05E1\u05E3 \u05DE\u05E1\u05DC\u05D5\u05DC" }),
+              calc.complete && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(_u, { children: [
+                "\u05D9\u05EA\u05E8\u05D4 \u05E0\u05D5\u05DB\u05D7\u05D9\u05EA \u05DE\u05E9\u05D5\u05E2\u05E8\u05EA (\u05D9\u05D5\u05E8\u05D3\u05EA \u05D0\u05D5\u05D8\u05D5\u05DE\u05D8\u05D9\u05EA \u05DB\u05DC \u05D7\u05D5\u05D3\u05E9): ",
+                fmt(calc.balance),
+                " \xB7 \u05D4\u05D7\u05D6\u05E8 \u05D7\u05D5\u05D3\u05E9\u05D9 \u05E0\u05D5\u05DB\u05D7\u05D9: ",
+                fmt(calc.currentPayment)
+              ] }),
+              !calc.complete && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(_u, { children: "\u05D4\u05E9\u05DC\u05D9\u05DE\u05D5 \u05D9\u05EA\u05E8\u05D4, \u05E8\u05D9\u05D1\u05D9\u05EA \u05D5\u05E9\u05E0\u05D9\u05DD \u05D1\u05DB\u05DC \u05DE\u05E1\u05DC\u05D5\u05DC \u05DB\u05D3\u05D9 \u05DC\u05E8\u05D0\u05D5\u05EA \u05D0\u05EA \u05D4\u05D4\u05D7\u05D6\u05E8 \u05D4\u05E0\u05D5\u05DB\u05D7\u05D9. \u05D4\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05DE\u05E9\u05DE\u05E9\u05EA \u05E8\u05E7 \u05DC\u05D4\u05E9\u05D5\u05D5\u05D0\u05D4 \u05DE\u05D5\u05DC \u05D4\u05D4\u05D7\u05D6\u05E8 \u05D4\u05D7\u05D3\u05E9." }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+                ku,
+                {
+                  label: "\u05E1\u05D5\u05D2 \u05E8\u05DB\u05D9\u05E9\u05D4 (\u05DE\u05E1 \u05E8\u05DB\u05D9\u05E9\u05D4, \u05DE\u05D3\u05E8\u05D2\u05D5\u05EA 2026)",
+                  value: form.taxMode,
+                  onChange: (v2) => update({ taxMode: v2 }),
+                  options: [
+                    { value: "upgrader", label: "\u05DE\u05E9\u05E4\u05E8 \u05D3\u05D9\u05D5\u05E8" },
+                    { value: "single", label: "\u05D3\u05D9\u05E8\u05D4 \u05D9\u05D7\u05D9\u05D3\u05D4" },
+                    { value: "additional", label: "\u05D3\u05D9\u05E8\u05D4 \u05E0\u05D5\u05E1\u05E4\u05EA" }
+                  ]
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "grid2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05E2\u05D5\u05E8\u05DA \u05D3\u05D9\u05DF \u05D1\u05E7\u05E0\u05D9\u05D9\u05D4 (% + \u05DE\u05E2\u05F4\u05DE)", value: form.lawyerPct, onChange: (v2) => update({ lawyerPct: v2 }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05EA\u05D9\u05D5\u05D5\u05DA \u05E7\u05E0\u05D9\u05D9\u05D4 (% + \u05DE\u05E2\u05F4\u05DE)", value: form.brokerPct, onChange: (v2) => update({ brokerPct: v2 }) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "grid2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05E9\u05DE\u05D0\u05D9 (\u20AA \u05E7\u05D1\u05D5\u05E2)", value: form.appraiserCost, onChange: (v2) => update({ appraiserCost: v2 }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(MoneyField, { label: "\u05D4\u05D5\u05D1\u05DC\u05D4 (\u20AA \u05E7\u05D1\u05D5\u05E2)", value: form.movingCost, onChange: (v2) => update({ movingCost: v2 }) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SmallField, { label: "\u05EA\u05D9\u05D5\u05D5\u05DA \u05DE\u05DB\u05D9\u05E8\u05D4 (% \u05DE\u05DE\u05D7\u05D9\u05E8 \u05D4\u05DE\u05DB\u05D9\u05E8\u05D4 + \u05DE\u05E2\u05F4\u05DE)", value: form.sellCostPct, onChange: (v2) => update({ sellCostPct: v2 }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "exp-box", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sub-title", children: "\u05E2\u05DC\u05D5\u05D9\u05D5\u05EA \u05E0\u05DC\u05D5\u05D5\u05EA - \u05DC\u05D0 \u05E0\u05DB\u05E0\u05E1\u05D5\u05EA \u05DC\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0" }),
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "exp-lines", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05DE\u05E1 \u05E8\u05DB\u05D9\u05E9\u05D4" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.tax) })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05E2\u05D5\u05E8\u05DA \u05D3\u05D9\u05DF" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.lawyer) })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05EA\u05D9\u05D5\u05D5\u05DA \u05E7\u05E0\u05D9\u05D9\u05D4" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.broker) })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05EA\u05D9\u05D5\u05D5\u05DA \u05DE\u05DB\u05D9\u05E8\u05D4" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.sellCost) })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05E9\u05DE\u05D0\u05D9" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.appraiser) })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05D4\u05D5\u05D1\u05DC\u05D4" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.moving) })
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "exp-total", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05E1\u05D4\u05F4\u05DB \u05E2\u05DC\u05D5\u05D9\u05D5\u05EA \u05E0\u05DC\u05D5\u05D5\u05EA" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("b", { children: fmt(calc.expenses) })
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(_u, { children: ownMode ? `\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA \u05DC\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05D4\u05D7\u05D3\u05E9\u05D4 - \u05DC\u05E4\u05D9 \u05D4\u05DE\u05E1\u05DC\u05D5\u05DC\u05D9\u05DD \u05E9\u05D4\u05D6\u05E0\u05EA\u05DD: ${NEW_MIX.map((t) => `${t.short} ${t.rate}% (${Math.round(t.share)}%)`).join(", ")}.` : `\u05E8\u05D9\u05D1\u05D9\u05D5\u05EA \u05DC\u05DE\u05E9\u05DB\u05E0\u05EA\u05D0 \u05D4\u05D7\u05D3\u05E9\u05D4 - \u05DE\u05DE\u05D5\u05E6\u05E2 \u05E9\u05D5\u05E7 \u05DC\u05E4\u05D9 \u05D1\u05E0\u05E7 \u05D9\u05E9\u05E8\u05D0\u05DC (${MARKET_RATES.asOf}): \u05E7\u05DC\u05F4\u05E6 ${MARKET_RATES.fixedUnindexed}%, \u05E4\u05E8\u05D9\u05D9\u05DD ${MARKET_RATES.prime}%, \u05E7\u05D1\u05D5\u05E2\u05D4 \u05E6\u05DE\u05D5\u05D3\u05D4 ${MARKET_RATES.fixedIndexed}%.` })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(ju, { title: "\u05D7\u05E9\u05D5\u05D1 \u05DC\u05D3\u05E2\u05EA", tone: "warning", children: "\u05D4\u05D4\u05D7\u05D6\u05E8 \u05DE\u05D7\u05D5\u05E9\u05D1 \u05D1\u05E9\u05E4\u05D9\u05E6\u05E8; \u05D1\u05DE\u05E1\u05DC\u05D5\u05DC\u05D9\u05DD \u05E6\u05DE\u05D5\u05D3\u05D9 \u05DE\u05D3\u05D3 \u05D5\u05DE\u05E9\u05EA\u05E0\u05D9\u05DD \u05D4\u05D4\u05D7\u05D6\u05E8 \u05D1\u05E4\u05D5\u05E2\u05DC \u05D9\u05E9\u05EA\u05E0\u05D4. \u05DC\u05D0 \u05E0\u05DB\u05DC\u05DC\u05D9\u05DD \u05DE\u05E1 \u05E9\u05D1\u05D7 \u05D5\u05E2\u05DC\u05D5\u05D9\u05D5\u05EA \u05E4\u05D9\u05E0\u05D5\u05D9. \u05DC\u05E4\u05E0\u05D9 \u05D4\u05D7\u05EA\u05D9\u05DE\u05D4 \u05DB\u05D3\u05D0\u05D9 \u05DC\u05D1\u05D3\u05D5\u05E7 \u05DE\u05D5\u05DC \u05D9\u05D5\u05E2\u05E5 \u05DE\u05E9\u05DB\u05E0\u05EA\u05D0\u05D5\u05EA \u05D5\u05E2\u05D5\u05E8\u05DA \u05D3\u05D9\u05DF." })
+        ] }),
+        tab === "offer" && hasKh && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "tab-body", style: { position: "relative" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sum-actions", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(W, { onClick: () => setOfferModal(true), children: "\u05E2\u05E8\u05D9\u05DB\u05EA \u05E7\u05D1\u05DC\u05DF" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(_u, { children: "\u05EA\u05E6\u05D5\u05D2\u05D4 \u05D1\u05DC\u05D1\u05D3. \u05DC\u05E9\u05D9\u05E0\u05D5\u05D9 \u05D4\u05E0\u05EA\u05D5\u05E0\u05D9\u05DD \u05DC\u05D7\u05E6\u05D5 \u05E2\u05DC \u05E2\u05E8\u05D9\u05DB\u05EA \u05E7\u05D1\u05DC\u05DF." }),
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("fieldset", { disabled: true, style: { display: "contents" }, children: offerInner() })
         ] }),
         tab === "port" && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "tab-body", children: [
           /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "sum-title", children: "\u05D2\u05E8\u05D9\u05E8\u05EA \u05DE\u05E9\u05DB\u05E0\u05EA\u05D0" }),
@@ -19106,7 +19123,7 @@ ${xref}
               ] }),
               swRow("a", scnA.ltv)
             ] }),
-            !(scnB && scnC) ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "scn prompt", children: [
+            hasKh && (!(scnB && scnC) ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "scn prompt", children: [
               /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "scn-top", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { children: "\u05E2\u05DD \u05E7\u05D1\u05DC\u05DF" }) }),
               /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { children: "\u05DE\u05DC\u05D0\u05D5 \u05DE\u05D7\u05D9\u05E8 \u05D3\u05D9\u05E8\u05D4 \u05D5\u05DE\u05D7\u05D9\u05E8 \u05DE\u05DB\u05D9\u05E8\u05D4 \u05DB\u05D3\u05D9 \u05DC\u05E8\u05D0\u05D5\u05EA \u05D0\u05EA \u05D4\u05E6\u05E2\u05EA \u05D4\u05E7\u05D1\u05DC\u05DF." })
             ] }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
@@ -19240,7 +19257,7 @@ ${xref}
                 scnC.redNotes.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "loan-red", children: scnC.redNotes.map((n, i) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { children: n }, i)) }),
                 swRow("c", scnC.ltv)
               ] })
-            ] }),
+            ] })),
             scnInfo && infoOf(scnInfo.k) && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "pop-bg", onClick: () => setScnInfo(null) }),
               /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "pop", style: { top: scnInfo.top }, role: "dialog", "aria-label": infoOf(scnInfo.k).title, children: [
